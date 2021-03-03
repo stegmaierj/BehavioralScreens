@@ -1,3 +1,28 @@
+% This code is part of the MATLAB toolbox Gait-CAD.
+% Copyright (C) 2012 [Johannes Stegmaier, Ralf Mikut]
+%
+%
+% Last file change: 22-Okt-2012 16:27:00
+%
+% This program is free software; you can redistribute it and/or modify,
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation; either version 2 of the License, or any later version.
+%
+% This program is distributed in the hope that it will be useful, but
+% WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General gaitPublic License for more details.
+%
+% You should have received a copy of the GNU General Public License along with this program;
+% if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA.
+%
+% You will find further information about Gait-CAD in the manual or in the following conference paper:
+%
+% STEGMAIER,J.;ALSHUT,R.;REISCHL,M.;MIKUT,R.: Information Fusion of Image Analysis, Video Object Tracking, and Data Mining of Biological Images using the Open Source MATLAB Toolbox Gait-CAD.
+% In:  Proc., DGBMT-Workshop Biosignal processing, Jena, 2012, pp. 109-111; 2012
+% Online available: http://www.degruyter.com/view/j/bmte.2012.57.issue-s1-B/bmt-2012-4073/bmt-2012-4073.xml
+%
+% Please refer to this paper, if you use Gait-CAD with the ImVid extension for your scientific work.
+
 % Auswahl Zeitreihe (ZR)
 % {'_xpos','_ypos','_zpos','Matching problem'}
 %set_textauswahl_listbox(gaitfindobj('CE_Auswahl_ZR'),{'xpos','ypos','zpos'});eval(gaitfindobj_callback('CE_Auswahl_ZR'));
