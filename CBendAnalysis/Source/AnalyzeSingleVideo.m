@@ -40,14 +40,11 @@ function [] = AnalyzeSingleVideo(inputFile, generateResultVideo)
     settings.generateResultVideo = generateResultVideo;
 
     %% setup the input and output paths
-    [outputDir,outputFile,~] = fileparts(inputFile);
+    [outputDir,~,~] = fileparts(inputFile);
 
     %% initialize dispstat - to be able to overwrite command window messages
     dispstat('','init');
 
     %% perform the detection
     PerformCBendAnalysis(inputFile, outputDir, settings);
-
-    %% perform result computations
-    PerformResultAnalysis([outputDir '\' outputFile '.mat']);
 end

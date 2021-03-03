@@ -41,6 +41,11 @@ function [] = PerformCBendAnalysis(inputFile, outputDir, settings)
     if (~isfield(settings,'numFramesAfterStimulus')); numFramesAfterStimulus = 1000; else; numFramesAfterStimulus = settings.numFramesAfterStimulus; end  %% the number of frames to consider after the pulse
     if (~isfield(settings,'generateResultVideo')); generateResultVideo = false; else; generateResultVideo = settings.generateResultVideo; end %% if enabled, result videos are generated
     if (~isfield(settings,'latencyThreshold')); latencyThreshold = 16; else; latencyThreshold = settings.latencyThreshold; end %% head orientation changes above this value are considered as cbend start (16° as described in Burgess07)
+    if (~isfield(settings,'minMaxRatioLEDIntensity')); minMaxRatioLEDIntensity = 1.01; else; minMaxRatioLEDIntensity = settings.minMaxRatioLEDIntensity; end %% minimum vs. maximum intensity ratio of the led. If close to 1 means that the LED-related intensity increase is hardly visible.
+    
+    if (~isfield(settings,'xRangeLED')); xRangeLED = 1:100; else; xRangeLED = settings.xRangeLED; end %% range of pixels in the x-direction to locate the LED
+    if (~isfield(settings,'yRangeLED')); yRangeLED = 1:100; else;yRangeLED = settings.yRangeLED; end %% range of pixels in the y-direction to locate the LED
+    
     if (~isfield(settings,'debugFigures')); debugFigures = false; else; debugFigures = settings.debugFigures; end %% if enabled, debug figures are shown
 
     %% specify the input file and output directory
@@ -74,7 +79,7 @@ function [] = PerformCBendAnalysis(inputFile, outputDir, settings)
         end
 
         meanImage = meanImage + (1/numFramesAnalysis) * currentFrame;
-        meanIntensityLED(i) = mean(mean(currentFrame(1:100, 1:100)));
+        meanIntensityLED(i) = mean(mean(currentFrame(yRangeLED, xRangeLED)));
         if (mod(i, 100) == 0 || i == numFrames)
             fboth(logFile, ['\t- Processed ' num2str(round(100*i/numFrames)) '%%']);
         end
@@ -84,6 +89,15 @@ function [] = PerformCBendAnalysis(inputFile, outputDir, settings)
     binarizedMeanIntensityLED = meanIntensityLED > (0.5*(quantile(meanIntensityLED, 0.05)+quantile(meanIntensityLED, 0.95)));
     ledSwitchTimePoints = find(binarizedMeanIntensityLED - circshift(binarizedMeanIntensityLED, 1));
     numPulses = floor(length(ledSwitchTimePoints)/2);
+    
+    minMaxRatio = quantile(meanIntensityLED, 0.95) / quantile(meanIntensityLED, 0.05);
+    
+    if (minMaxRatio < minMaxRatioLEDIntensity)
+        fboth(logFile, ['- No pulses were detected in the image. If there is indeed a pulse present, try to decrease the minMaxRatioLEDIntensity parameter (currently set to ' num2str(minMaxRatioLEDIntensity) ') or relocate the ROI for the LED using the parameters xRangeLED and yRangeLED.']);
+        numPulses = 0;
+        ledSwitchTimePoints = [];
+    end
+    
     frameRanges = zeros(numPulses, 2);
     for i=1:2:length(ledSwitchTimePoints)
         frameRanges(((i+1)/2),:) = ledSwitchTimePoints(i:i+1)';
@@ -282,6 +296,18 @@ function [] = PerformCBendAnalysis(inputFile, outputDir, settings)
                 figure;
                 plot(smooth(relativeAngles, 1, 'moving')); hold on;
                 plot(peakIndices, peakValues, '*g');
+            end
+        end
+        
+        %% delete intermediate results
+        allFilesAndFolders = dir(outputDir);
+        justFilesInDir = allFilesAndFolders(~([allFilesAndFolders.isdir]));
+        numberOfFiles = length(justFilesInDir);
+        for i = 1:numberOfFiles
+            if strfind(justFilesInDir(i).name, 'prjz')
+                delete([outputDir '/' justFilesInDir(i).name]);
+            elseif strfind(justFilesInDir(i).name, 'tracklets')
+                delete([outputDir '/' justFilesInDir(i).name]);
             end
         end
 

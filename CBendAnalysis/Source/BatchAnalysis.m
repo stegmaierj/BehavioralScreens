@@ -36,7 +36,7 @@ avifiles = dir(fileFilter);
 generateResultVideo = false;
 
 %% process all detected videos
-for i=1:size(avifiles,1)
+parfor i=1:size(avifiles,1)
     
     %% check if video was analyzed before and skip in that case (delete result files to reprocess)
     [pathstr,name,ext] = fileparts([inputFolder '/' avifiles(i).name]);
@@ -54,22 +54,55 @@ fprintf(fileID, 'Filename;Pulse;NumTrackedLarva;NumActiveLarva;MeanLatency;MeanD
 
 %% find all valid result files
 resultFiles = dir([inputFolder '/*Pulse*.mat']);
-for i=1:length(resultFileFilter)
+for i=1:length(resultFiles)
     
     %% load the current results
     currentFile = [inputFolder filesep resultFiles(i).name];
     load(currentFile);
     
+    %% open result file for the current video/pulse
+    fileIDPulse = fopen([inputFolder filesep strrep(resultFiles(i).name, '.mat', '.csv')], 'wb');
+    fprintf(fileIDPulse, 'Filename;Pulse;LarvaID;IsActive;Latency;DistanceTraveled;\n');
+    
     %% extract the current summary statistics
-    numTrackedLarva = 0;
+    numTrackedLarva = length(completeTracks);
     numActiveLarva = 0;
-    meanLatency = 0;
+    meanLatency = 0;  
     meanDistanceTraveled = 0;
     meanDistanceTraveledActiveLarva = 0;
+    for j=completeTracks'
+        
+        currentDistanceTraveledAfterPulse = 0;
+        currentLatency = 0;
+        isActive = 0;
+        
+        if (isfield(tracklets, 'distanceTraveledAfterPulse') && ~isempty(tracklets(j).distanceTraveledAfterPulse))
+            meanDistanceTraveled = meanDistanceTraveled + tracklets(j).distanceTraveledAfterPulse;
+        end
+        
+        if (isfield(tracklets, 'latency') && ~isempty(tracklets(j).latency))
+            isActive = 1;
+            currentLatency = tracklets(j).latency;
+            currentDistanceTraveledAfterPulse = tracklets(j).distanceTraveledAfterPulse;
+            numActiveLarva = numActiveLarva + 1;
+            meanLatency = meanLatency + currentLatency;
+            meanDistanceTraveledActiveLarva = meanDistanceTraveledActiveLarva + currentDistanceTraveledAfterPulse;
+        end
+        
+        %% write results of the current larva
+        fprintf(fileIDPulse, '%s;%i;%i;%i;%.2f;%.2f\n', resultFiles(i).name, str2double(resultFiles(i).name(end-6:end-4)), j, isActive, currentLatency, currentDistanceTraveledAfterPulse);
+    end
+    
+    %% close current pulse results
+    fclose(fileIDPulse);
+    
+    %% scale the measures according to the number of (active) larva
+    meanLatency = meanLatency / numActiveLarva;
+    meanDistanceTraveled = meanDistanceTraveled / numTrackedLarva;
+    meanDistanceTraveledActiveLarva = meanDistanceTraveledActiveLarva / numActiveLarva;
     
     %% write the current result line to the file
     fprintf(fileID, '%s;%i;%i;%i;%.2f;%.2f;%.2f\n', resultFiles(i).name, str2double(resultFiles(i).name(end-6:end-4)), numTrackedLarva, numActiveLarva, meanLatency, meanDistanceTraveled, meanDistanceTraveledActiveLarva);
-    
 end
 
 %% close the results file
