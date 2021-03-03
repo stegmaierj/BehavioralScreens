@@ -24,7 +24,7 @@
 %
 %%
 
-function [results] = AnalyzeSingleVideo( inputFile, generateResultVideo )
+function [] = AnalyzeSingleVideo(inputFile, generateResultVideo)
     
     %% setup required parameters
     settings = struct();

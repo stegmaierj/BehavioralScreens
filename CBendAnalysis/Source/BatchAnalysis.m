@@ -24,6 +24,9 @@
 %
 %%
 
+%% add dependencies
+addpath('ThirdParty/');
+
 %% open input folder and find all contained avi files
 inputFolder = uigetdir;
 fileFilter = [inputFolder '/*.avi'];
