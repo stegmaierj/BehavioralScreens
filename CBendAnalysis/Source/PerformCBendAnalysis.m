@@ -164,10 +164,17 @@ function [] = PerformCBendAnalysis(inputFile, outputDir, settings)
         fboth(logFile, '+ Performing tracking of all detected larvae ...'); tic;
         d_orgs = zeros(0, length(frameRange), 14);
         var_bez = char('id', 'area', 'xpos', 'ypos', 'zpos', 'headDirX', 'headDirY', 'eccentricity', 'solidity', 'convexArea', 'equivDiameter', 'angleChange', 'relativeAngleSum', 'angleChangeSum');
+        numDetectedLarva = 0;
         for i=1:length(frameRange)
             currentFrame = frameRange(i);
-            for j=1:length(larvaModels{currentFrame})
+            
+            %% continue if there's no larva contained in the current frame
+            if (~isfield(larvaModels{currentFrame}, 'larvaModel'))
+                continue;
+            end
 
+            for j=1:length(larvaModels{currentFrame})
+               
                 %% identify the head direction
                 if (size(larvaModels{currentFrame}(j).larvaModel, 1) < 2)
                     headDirX = 0;
@@ -192,7 +199,15 @@ function [] = PerformCBendAnalysis(inputFile, outputDir, settings)
                     sum(abs(larvaModels{currentFrame}(j).angleChange)), ...,
                     larvaModels{currentFrame}(j).relativeAngleSum, ...,
                     larvaModels{currentFrame}(j).angleChangeSum];
+                
+                %% count total number of larva
+                numDetectedLarva = numDetectedLarva + 1;
             end
+        end
+        
+        if (numDetectedLarva == 0)
+            fboth(logFile, ['- No larva detected during current pulse, skipping tracking ...']);
+            continue;
         end
 
         %% perform the tracking using a nearest neighbor tracking approach
