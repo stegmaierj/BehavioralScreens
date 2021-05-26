@@ -227,11 +227,15 @@ function [] = PerformCBendAnalysis(inputFile, outputDir, settings)
             %% convert the relative time range of the tracklets to the absolute time frame
             tracklets(j).startTime = tracklets(j).startTime-framePadding+frameRanges(p,1); %#ok<AGROW>
             tracklets(j).endTime = tracklets(j).endTime-framePadding+frameRanges(p,1); %#ok<AGROW>
+            
+            frameToFrameDistanceTotal = sqrt(sum((circshift(tracklets(j).pos(:,1:2), -1) - tracklets(j).pos(:,1:2)).^2, 2));
+            tracklets(j).totalDistanceTraveled = sum(frameToFrameDistanceTotal(1:(end-1))); %#ok<AGROW>
+            
             if (tracklets(j).startTime == tracklets(j).endTime || ...
                     tracklets(j).endTime <= frameRanges(p,1) || ...
                     tracklets(j).startTime > frameRanges(p,1) || ...
                     (tracklets(j).endTime - frameRanges(p,1)) < minTrackletLengthAfterStimulus)
-
+                
                 fboth(logFile, ['\t- Skipped tracklet with length ' num2str(length(tracklets(j).ids)) '']);
                 continue;
             else
