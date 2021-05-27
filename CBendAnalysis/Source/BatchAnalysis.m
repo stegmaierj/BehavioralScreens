@@ -63,8 +63,8 @@ for i=1:length(resultFiles)
     %% open result file for the current video/pulse
     fileIDPulse = fopen([inputFolder filesep strrep(resultFiles(i).name, '.mat', '.csv')], 'wb');
     fileIDPulseAllTracks = fopen([inputFolder filesep strrep(resultFiles(i).name, '.mat', '_AllTracks.csv')], 'wb');
-    fprintf(fileIDPulse, 'Filename;Pulse;LarvaID;IsActive;Latency;DistanceTraveledAfterPulse;TotalDistanceTraveled\n');
-    fprintf(fileIDPulseAllTracks, 'Filename;Pulse;LarvaID;IsActive;Latency;DistanceTraveledAfterPulse;TotalDistanceTraveled\n');
+    fprintf(fileIDPulse, 'Filename;Pulse;LarvaID;StartTime;EndTime;NumTrackedFrames;IsActive;Latency;DistanceTraveledAfterPulse;TotalDistanceTraveled\n');
+    fprintf(fileIDPulseAllTracks, 'Filename;Pulse;LarvaID;StartTime;EndTime;NumTrackedFrames;IsActive;Latency;DistanceTraveledAfterPulse;TotalDistanceTraveled\n');
     
     %% extract the current summary statistics
     numTrackedLarva = length(completeTracks);
@@ -78,6 +78,9 @@ for i=1:length(resultFiles)
         currentLatency = 0;
         isActive = 0;
         totalDistanceTraveled = tracklets(j).totalDistanceTraveled;
+        startTime = tracklets(j).startTime;
+        endTime = tracklets(j).endTime;
+        numTrackedFrames = endTime - startTime + 1;
         
         if (isfield(tracklets, 'distanceTraveledAfterPulse') && ~isempty(tracklets(j).distanceTraveledAfterPulse))
             meanDistanceTraveled = meanDistanceTraveled + tracklets(j).distanceTraveledAfterPulse;
@@ -94,9 +97,9 @@ for i=1:length(resultFiles)
         
         if (ismember(j, completeTracks))
             %% write results of the current larva
-            fprintf(fileIDPulse, '%s;%i;%i;%i;%.2f;%.2f;%.2f\n', resultFiles(i).name, str2double(resultFiles(i).name(end-6:end-4)), j, isActive, currentLatency, currentDistanceTraveledAfterPulse, totalDistanceTraveled);
+            fprintf(fileIDPulse, '%s;%i;%i;%i;%i;%i;%i;%.2f;%.2f;%.2f\n', resultFiles(i).name, str2double(resultFiles(i).name(end-6:end-4)), j, startTime, endTime, numTrackedFrames, isActive, currentLatency, currentDistanceTraveledAfterPulse, totalDistanceTraveled);
         end
-        fprintf(fileIDPulseAllTracks, '%s;%i;%i;%i;%.2f;%.2f;%.2f\n', resultFiles(i).name, str2double(resultFiles(i).name(end-6:end-4)), j, isActive, currentLatency, currentDistanceTraveledAfterPulse, totalDistanceTraveled);
+        fprintf(fileIDPulseAllTracks, '%s;%i;%i;%i;%i;%i;%i;%.2f;%.2f;%.2f\n', resultFiles(i).name, str2double(resultFiles(i).name(end-6:end-4)), j, startTime, endTime, numTrackedFrames, isActive, currentLatency, currentDistanceTraveledAfterPulse, totalDistanceTraveled);
     end
     
     %% close current pulse results
