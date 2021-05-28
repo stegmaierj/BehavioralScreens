@@ -50,7 +50,7 @@ end
 
 %% aggregate all final results to a single table
 fileID = fopen([inputFolder filesep 'combinedResults.csv'], 'wb');
-fprintf(fileID, 'Filename;Pulse;NumTrackedLarva;NumActiveLarva;MeanLatency;MeanDistanceTraveled;MeanDistanceTraveledActiveLarva\n');
+fprintf(fileID, 'Filename;Pulse;NumCompletelyTrackedLarva;NumActiveLarva;MeanLatency;MeanDistanceTraveled;MeanDistanceTraveledActiveLarva\n');
 
 %% find all valid result files
 resultFiles = dir([inputFolder '/*Pulse*.mat']);
@@ -63,8 +63,8 @@ for i=1:length(resultFiles)
     %% open result file for the current video/pulse
     fileIDPulse = fopen([inputFolder filesep strrep(resultFiles(i).name, '.mat', '.csv')], 'wb');
     fileIDPulseAllTracks = fopen([inputFolder filesep strrep(resultFiles(i).name, '.mat', '_AllTracks.csv')], 'wb');
-    fprintf(fileIDPulse, 'Filename;Pulse;LarvaID;StartTime;EndTime;NumTrackedFrames;IsActive;Latency;DistanceTraveledAfterPulse;TotalDistanceTraveled\n');
-    fprintf(fileIDPulseAllTracks, 'Filename;Pulse;LarvaID;StartTime;EndTime;NumTrackedFrames;IsActive;Latency;DistanceTraveledAfterPulse;TotalDistanceTraveled\n');
+    fprintf(fileIDPulse, 'Filename;Pulse;LarvaID;StartTime;EndTime;NumTrackedFrames;IsComplete;IsActive;Latency;DistanceTraveledAfterPulse;TotalDistanceTraveled\n');
+    fprintf(fileIDPulseAllTracks, 'Filename;Pulse;LarvaID;StartTime;EndTime;NumTrackedFrames;IsComplete;IsActive;Latency;DistanceTraveledAfterPulse;TotalDistanceTraveled\n');
     
     %% extract the current summary statistics
     numTrackedLarva = length(completeTracks);
@@ -95,11 +95,15 @@ for i=1:length(resultFiles)
             meanDistanceTraveledActiveLarva = meanDistanceTraveledActiveLarva + currentDistanceTraveledAfterPulse;
         end
         
-        if (ismember(j, completeTracks))
+
+        %% check if track spans the entire duration
+        isComplete = ismember(j, completeTracks);
+        if (ismember(j, completeTracks) || isActive == true)
+                       
             %% write results of the current larva
-            fprintf(fileIDPulse, '%s;%i;%i;%i;%i;%i;%i;%.2f;%.2f;%.2f\n', resultFiles(i).name, str2double(resultFiles(i).name(end-6:end-4)), j, startTime, endTime, numTrackedFrames, isActive, currentLatency, currentDistanceTraveledAfterPulse, totalDistanceTraveled);
+            fprintf(fileIDPulse, '%s;%i;%i;%i;%i;%i;%i;%i;%.2f;%.2f;%.2f\n', resultFiles(i).name, str2double(resultFiles(i).name(end-6:end-4)), j, startTime, endTime, numTrackedFrames, isComplete, isActive, currentLatency, currentDistanceTraveledAfterPulse, totalDistanceTraveled);
         end
-        fprintf(fileIDPulseAllTracks, '%s;%i;%i;%i;%i;%i;%i;%.2f;%.2f;%.2f\n', resultFiles(i).name, str2double(resultFiles(i).name(end-6:end-4)), j, startTime, endTime, numTrackedFrames, isActive, currentLatency, currentDistanceTraveledAfterPulse, totalDistanceTraveled);
+        fprintf(fileIDPulseAllTracks, '%s;%i;%i;%i;%i;%i;%i;%i;%.2f;%.2f;%.2f\n', resultFiles(i).name, str2double(resultFiles(i).name(end-6:end-4)), j, startTime, endTime, numTrackedFrames, isComplete, isActive, currentLatency, currentDistanceTraveledAfterPulse, totalDistanceTraveled);
     end
     
     %% close current pulse results
