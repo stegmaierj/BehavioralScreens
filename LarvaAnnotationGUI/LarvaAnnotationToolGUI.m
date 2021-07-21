@@ -1,6 +1,6 @@
 %%
- % CellCountingGUI.
- % Copyright (C) 2019 J. Stegmaier
+ % LarvaAnnotationToolGUI.
+ % Copyright (C) 2021 J. Stegmaier
  %
  % Licensed under the Apache License, Version 2.0 (the "License");
  % you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ if (~isdeployed)
 end
 
 %% open the input image
-settings.inputPath = '/Users/jstegmaier/ScieboDrive/Projects/2021/PeravaliKIT_LarvaTracking/Data/Labeling/RawImages'; %uigetdir('', 'Select the folder containing the images for counting.');
+settings.inputPath = uigetdir('', 'Select the folder containing the images for counting.');
 settings.inputPath = [settings.inputPath filesep];
 
 settings.outputPath = [settings.inputPath '..' filesep];
