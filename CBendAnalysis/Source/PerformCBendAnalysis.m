@@ -228,8 +228,20 @@ function [] = PerformCBendAnalysis(inputFile, outputDir, settings)
             tracklets(j).startTime = tracklets(j).startTime-framePadding+frameRanges(p,1); %#ok<AGROW>
             tracklets(j).endTime = tracklets(j).endTime-framePadding+frameRanges(p,1); %#ok<AGROW>
             
-            frameToFrameDistanceTotal = sqrt(sum((circshift(tracklets(j).pos(:,1:2), -1) - tracklets(j).pos(:,1:2)).^2, 2));
-            tracklets(j).totalDistanceTraveled = sum(frameToFrameDistanceTotal(1:(end-1))); %#ok<AGROW>
+            frameToFrameDistance = sqrt(sum((circshift(tracklets(j).pos(:,1:2), -1) - tracklets(j).pos(:,1:2)).^2, 2));
+            tracklets(j).totalDistanceTraveled = sum(frameToFrameDistance(1:(end-1))); %#ok<AGROW>              
+            
+            if (length(frameToFrameDistance) >= (2*framePadding))
+                tracklets(j).distanceTraveledAfterPulse = sum(frameToFrameDistance(framePadding:(2*framePadding))); %#ok<AGROW>
+            else
+                tracklets(j).distanceTraveledAfterPulse = 0;
+            end
+            
+            if (length(frameToFrameDistance) >= framePadding)
+                tracklets(j).distanceTraveledBeforePulse = sum(frameToFrameDistance(1:framePadding)); %#ok<AGROW>
+            else
+                tracklets(j).distanceTraveledBeforePulse = 0; %#ok<AGROW>
+            end
             
             if (tracklets(j).startTime == tracklets(j).endTime || ...
                     tracklets(j).endTime <= frameRanges(p,1) || ...
@@ -265,10 +277,7 @@ function [] = PerformCBendAnalysis(inputFile, outputDir, settings)
             tracklets(j).relativePulseTimePoint = relativePulseTimePoint; %#ok<AGROW>
             tracklets(j).impulseStartTimePoint = frameRanges(p,1); %#ok<AGROW>
             tracklets(j).impulseEndTimePoint = frameRanges(p,2); %#ok<AGROW>
-
-            frameToFrameDistance = sqrt(sum((circshift(tracklets(j).pos(:,1:2), -1) - tracklets(j).pos(:,1:2)).^2, 2));
-            tracklets(j).distanceTraveledAfterPulse = sum(frameToFrameDistance(1:(end-1))); %#ok<AGROW>
-
+           
             %% extract the peaks
             [peakValues, peakIndices] = findpeaks(smooth(relativeAngles, 1, 'moving'), 'MinPeakHeight', minPeakHeight, 'MinPeakWidth', minPeakWidth, 'MinPeakProminence', minPeakProminence);
 
