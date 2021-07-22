@@ -225,22 +225,29 @@ function [] = PerformCBendAnalysis(inputFile, outputDir, settings)
         for j=1:length(tracklets)
 
             %% convert the relative time range of the tracklets to the absolute time frame
+            relativeStartTime = tracklets(j).startTime;
+            relativeEndTime = tracklets(j).endTime;
+            validFramesBefore = relativeStartTime:framePadding;
+            validFramesBefore = validFramesBefore(validFramesBefore > 0 & validFramesBefore < size(tracklets(j).pos,1));
+            validFramesAfter = (framePadding-relativeStartTime+1):(2*framePadding-relativeStartTime+1);
+            validFramesAfter =  validFramesAfter(validFramesAfter > 0 & validFramesAfter < size(tracklets(j).pos,1));
+            
             tracklets(j).startTime = tracklets(j).startTime-framePadding+frameRanges(p,1); %#ok<AGROW>
             tracklets(j).endTime = tracklets(j).endTime-framePadding+frameRanges(p,1); %#ok<AGROW>
             
             frameToFrameDistance = sqrt(sum((circshift(tracklets(j).pos(:,1:2), -1) - tracklets(j).pos(:,1:2)).^2, 2));
             tracklets(j).totalDistanceTraveled = sum(frameToFrameDistance(1:(end-1))); %#ok<AGROW>              
             
-            if (length(frameToFrameDistance) >= (2*framePadding))
-                tracklets(j).distanceTraveledAfterPulse = sum(frameToFrameDistance(framePadding:(2*framePadding))); %#ok<AGROW>
-            else
-                tracklets(j).distanceTraveledAfterPulse = 0;
-            end
-            
-            if (length(frameToFrameDistance) >= framePadding)
-                tracklets(j).distanceTraveledBeforePulse = sum(frameToFrameDistance(1:framePadding)); %#ok<AGROW>
+            if (~isempty(validFramesBefore))
+                tracklets(j).distanceTraveledBeforePulse = sum(frameToFrameDistance(validFramesBefore)); %#ok<AGROW>
             else
                 tracklets(j).distanceTraveledBeforePulse = 0; %#ok<AGROW>
+            end
+            
+            if (~isempty(validFramesAfter))
+                tracklets(j).distanceTraveledAfterPulse = sum(frameToFrameDistance(validFramesAfter)); %#ok<AGROW>
+            else
+                tracklets(j).distanceTraveledAfterPulse = 0;
             end
             
             if (tracklets(j).startTime == tracklets(j).endTime || ...

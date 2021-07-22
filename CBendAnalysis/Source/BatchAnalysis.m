@@ -50,7 +50,7 @@ end
 
 %% aggregate all final results to a single table
 fileID = fopen([inputFolder filesep 'combinedResults.csv'], 'wb');
-fprintf(fileID, 'Filename;Pulse;NumCompletelyTrackedLarva;NumActiveLarva;MeanLatency;MeanDistanceTraveled;MeanDistanceTraveledActiveLarva;SumDistanceTraveledBeforePulse (-FramePadding -> t0);SumDistanceTraveledAfterPulse (t0 -> FramePadding); ActivityRatio (D_AfterImpulse / D_BeforeImpulse)\n');
+fprintf(fileID, 'Filename;Pulse;NumCompletelyTrackedLarva;NumActiveLarva;MeanLatency;MeanDistanceTraveled;MeanDistanceTraveledActiveLarva;SumDistanceTraveledBeforePulse;SumDistanceTraveledAfterPulse; ActivityRatio (D_AfterImpulse / D_BeforeImpulse)\n');
 
 %% find all valid result files
 resultFiles = dir([inputFolder '/*Pulse*.mat']);
@@ -63,8 +63,8 @@ for i=1:length(resultFiles)
     %% open result file for the current video/pulse
     fileIDPulse = fopen([inputFolder filesep strrep(resultFiles(i).name, '.mat', '.csv')], 'wb');
     fileIDPulseAllTracks = fopen([inputFolder filesep strrep(resultFiles(i).name, '.mat', '_AllTracks.csv')], 'wb');
-    fprintf(fileIDPulse, 'Filename;Pulse;LarvaID;StartTime;EndTime;NumTrackedFrames;IsComplete;IsActive;Latency;DistanceTraveledBeforePulse (-FramePadding -> t0);DistanceTraveledAfterPulse (t0 -> FramePadding);TotalDistanceTraveled\n');
-    fprintf(fileIDPulseAllTracks, 'Filename;Pulse;LarvaID;StartTime;EndTime;NumTrackedFrames;IsComplete;IsActive;Latency;DistanceTraveledBeforePulse (-FramePadding -> t0);DistanceTraveledAfterPulse (t0 -> FramePadding);TotalDistanceTraveled\n');
+    fprintf(fileIDPulse, 'Filename;Pulse;LarvaID;StartTime;EndTime;NumTrackedFrames;IsComplete;IsActive;Latency;DistanceTraveledBeforePulse;DistanceTraveledAfterPulse;TotalDistanceTraveled\n');
+    fprintf(fileIDPulseAllTracks, 'Filename;Pulse;LarvaID;StartTime;EndTime;NumTrackedFrames;IsComplete;IsActive;Latency;DistanceTraveledBeforePulse;DistanceTraveledAfterPulse;TotalDistanceTraveled\n');
     
     %% extract the current summary statistics
     numTrackedLarva = length(completeTracks);
